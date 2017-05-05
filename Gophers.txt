@@ -1,0 +1,21 @@
+package main
+
+import "fmt"
+
+func handoff( leftone, rightone chan int) {
+    leftone <- 1 + <-rightone
+}
+
+func main() {
+    const gophers = 25000
+    counter := make(chan int)
+    rightone := counter
+    leftone := counter
+    for i := 0; i < gophers-1; i++ {
+        rightone = make(chan int)
+        go handoff( leftone, rightone)
+        leftone = rightone
+    }
+    go func( c chan int) { c <- 1 }(rightone)
+    fmt.Println( <- counter)
+}
